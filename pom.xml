@@ -50,6 +50,25 @@
             <artifactId>selenium-java</artifactId>
             <version>3.141.59</version>
         </dependency>
+        <!-- 解析HTML-->
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.8.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/us.codecraft/xsoup -->
+        <dependency>
+            <groupId>us.codecraft</groupId>
+            <artifactId>xsoup</artifactId>
+            <version>0.3.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/jaxen/jaxen -->
+<!--        <dependency>-->
+<!--            <groupId>jaxen</groupId>-->
+<!--            <artifactId>jaxen</artifactId>-->
+<!--            <version>1.2.0</version>-->
+<!--        </dependency>-->
+
     </dependencies>
 
     <build>

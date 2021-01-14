@@ -6,9 +6,14 @@ import com.chone.fightpet.pojo.ResultMsg;
 import com.chone.fightpet.pojo.Uin;
 import com.chone.fightpet.selenium.LoginChrome;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import us.codecraft.xsoup.Xsoup;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +35,8 @@ public class FightService extends HttpUtils {
     /**
      * 全局cookie
      */
-     // private static String GLOBAL_COOKIE = "_qpsvr_localtk=0.29191153239897183; uin=o1282722653; skey=@XnddeODdm; RK=XvRlRgwqUQ; ptcz=a5fba08b941e8702282c3912ed4faac44a4f7ee9ec636a761c0ea6a35c682353; p_uin=o1282722653; pt4_token=LIvpVsIMaWc8VjzfkAw9LsI6DMOB*ttghCVxtcttD4s_; p_skey=ssE0Eh5dN6ZRgK25WpLGgWhVWACM-Agn5aH0t4e7cKc_; pgv_info=ssid=s8072740864; ts_last=id.qq.com/index.html; ts_refer=xui.ptlogin2.qq.com/cgi-bin/xlogin%3Fappid%3D1006102%26s_url%3Dhttps%3A//id.qq.com/index.html%2523info; pgv_pvid=7432704060; ts_uid=7651527990";
-    private static final String GLOBAL_COOKIE = LoginChrome.loginQQ();
+    private final static String GLOBAL_COOKIE = "_qpsvr_localtk=0.046588027542936006; uin=o1282722653; skey=@2oi2gPkZf; RK=uvQtAiwbUw; ptcz=cb93de5fea8d2c2e830d8a1961e86eeea5cc7d7a3a6272bb07adcd16ce4468bd";
+//       private static final String GLOBAL_COOKIE = LoginChrome.loginQQ();
     /**
      * qq,s-key,pt4_token,ts_uid
      */
@@ -45,13 +50,9 @@ public class FightService extends HttpUtils {
      *
      * @param args x
      */
-    public static void main(String[] args) {
-        // 打开chrome login
-       // GLOBAL_COOKIE = LoginChrome.loginQQ();
-
+    public static void mainZ(String[] args) {
         // 解析cookie参数
         parseCookieParameters();
-
 
         //手Q游戏一键加速
         oneClickAccelerationForMobileQQGames();
@@ -64,6 +65,10 @@ public class FightService extends HttpUtils {
         luckyGoosePackage();
         // 斗友召回
         fightingFriendsRecall();
+        // 获取好友列表并挑战[乐斗]
+        getFriendsList();
+        // 历练-获取佣兵
+        experienceEarningMercenaries();
         // 领取徒弟礼包
         receiveApprenticeReward();
 
@@ -97,13 +102,66 @@ public class FightService extends HttpUtils {
      *
      * @param args x
      */
-    public static void mainT(String[] args) {
+    public static void main(String[] args) {
         // 解析cookie参数
-        parseCookieParameters();
+//        parseCookieParameters();
 
-        //手Q游戏一键加速
-        //oneClickAccelerationForMobileQQGames();
+//        getGameInformation();
+        // 佣兵
+//           experienceEarningMercenaries();
+
+        // 领取登录礼包
+        //    receiveLoginPackage();
+
+        //https://dld.qzapp.z.qq.com/qpet/cgi-bin/phonepk?cmd=index
+
+        String html = doGet("https://dld.qzapp.z.qq.com/qpet/cgi-bin/phonepk?cmd=index", GLOBAL_COOKIE);
+        Document doc = Jsoup.parse(html);
+//        System.out.println("html = " + html);
+        //*[@id="id"]/p[1]/text()[51]
+//        String info = Xsoup.compile("//*[@id=\"id\"]/p[1]/text()").evaluate(doc).get();
+
+        String info = doc.getElementById("id")
+                .getElementsByTag("p")
+                .get(0).text();
+
+//        info= info.replace("|","").replaceAll("\\s*","");
+//
+//        // 斗豆:
+//        String[] one = info.split("斗豆:");
+//        String[] two = one[1].split("斗币:");
+//        String douDou = two[0];
+//        String[] three = two[1].split("鹅币：");
+//        // 斗币:
+//        String bucketOfCoins = three[0];
+//        // 鹅币：
+//        String gooseCoin = three[0];
+
+
+///html/body/div/p[1]/text()[50]
+//        Element id = doc.getElementById("id");
+//        Element a = id.getElementsByTag("p").get(0);
+//        Element aTag = a.getElementsByTag("a").get(76);
+
+
+//*[@id="id"]/p[1]/text()[50]
+        System.out.println(info);
+//        System.out.println(a.text());
+
+        ////*[@id="id"]/p[1]/a[76]
+
+
+//        System.out.println("get = " + html);
+
+
     }
+
+    private static void parsingParameters(String info) {
+        String[] conf = {"斗豆", "斗币", "鹅币"};
+
+        String[] one = info.split("斗豆:");
+    }
+
 
     /**
      * 解析Cookie参数
@@ -120,8 +178,8 @@ public class FightService extends HttpUtils {
         GLOBAL_PT4_TOKEN = qqInfo.get("pt4_token");
         GLOBAL_TS_UID = qqInfo.get("ts_uid");
 
-        // System.out.printf("GLOBAL_QQ[%s],GLOBAL_S_KEY[%s],GLOBAL_PT4_TOKEN[%s]", GLOBAL_QQ, GLOBAL_S_KEY, GLOBAL_PT4_TOKEN);
-        System.out.printf("GLOBAL_QQ[%s]%n", GLOBAL_QQ);
+        System.out.printf("GlobalQQ[%s] ", GLOBAL_QQ);
+        getGameInformation();
 
     }
 
@@ -132,11 +190,9 @@ public class FightService extends HttpUtils {
     public static void oneClickAccelerationForMobileQQGames() {
         String url = "https://api.uomg.com/api/qq.game?qq="
                 + GLOBAL_QQ + "&skey=" + GLOBAL_S_KEY + "&pt4_token=" + GLOBAL_PT4_TOKEN;
-
         getPetPkCmd(url, "手Q游戏一键加速");
 
     }
-
 
     /**
      * QQ等级一键加速
@@ -161,6 +217,114 @@ public class FightService extends HttpUtils {
         String doGet = doGet(url, "mode=test");
         System.out.println("doGet = " + doGet);
 
+    }
+
+    /**
+     * 获取好友列表
+     * https://fight.pet.qq.com/cgi-bin/petpk?cmd=view&kind=1&sub=1&selfuin=我的QQ
+     * {"result":"0","msg":"","pullflag":"0",
+     * "info":[{"uin":"33","sect":"0","petflag":"0","qzoneflag":"0",
+     * "qqvipflag":"0","qgameflag":"0","name":"金毛鹅王","lilian":"69",
+     * "enable":"1","sex":"1","factionid":"0"},....]}
+     * 乐斗好友
+     * https://fight.pet.qq.com/cgi-bin/petpk?cmd=fight&puin=对方QQ[uin]
+     */
+
+    public static void getFriendsList() {
+        String json = getPetPkCmd("view&kind=1&sub=1&selfuin=" + GLOBAL_QQ);
+        ResultMsg result = JSONObject.parseObject(json, ResultMsg.class);
+        List<Uin> info = result.getInfo();
+        // 不斗列表
+        List<String> noFighting = new ArrayList<>();
+        // 不斗自己
+        noFighting.add(GLOBAL_QQ);
+        noFighting.add("1060277949");
+
+        // 您已经太累了
+        String endStr = "您已经太累了";
+        // 前7个都是NPC
+        for (int i = 9; i <= 20; i++) {
+            Uin uin = info.get(i);
+            String qq = uin.getUin();
+            // 不和这个人打
+            if (noFighting.contains(qq)) {
+                continue;
+            }
+            // System.out.printf("QQ[%s] [%s] 力量[%s]%n",  qq, uin.getName(),uin.getLilian());
+            String echo = happyFriends(qq, uin.getName());
+            if (echo.contains(endStr)) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * 好友乐斗
+     *
+     * @param uin  qq
+     * @param name 昵称[非必填]
+     * @return res
+     */
+    public static String happyFriends(String uin, String name) {
+        String param = "fight&puin=" + uin;
+        return getPetPkCmd(param, String.format("乐斗好友[%s]", name));
+    }
+
+    //https://fight.pet.qq.com/cgi-bin/petpk?cmd=mappush&type=1&npcid=
+
+    /**
+     * 历练-获取佣兵 [取值区间=>20±]
+     * 6194[赵  敏]√
+     * 6174[韦一笑]
+     * 6154[鹤笔翁]
+     * 6134[扫地僧]√
+     * 6114[韦小宝]√
+     * 6094[小龙女]√
+     * 6074[丘处机]
+     * 6054[丁春秋]√
+     * 6034[令狐冲]x
+     */
+    public static void experienceEarningMercenaries() {
+        //该NPC今日挑战次数已完，请明日再来挑战该NPC。
+        //乐斗助手帮你使用了活力药水，你的活力增加了你使用了活力药水，活力增加了30！!
+        int start = 6054;
+        String startStr = "活力增加了";
+        String endStr = "该NPC今日";
+        String resStr;
+        int i = 3;
+        do {
+            resStr = getMercenaries(start);
+            if (resStr.contains(endStr)) {
+                start -= 20;
+                resStr = getMercenaries(start);
+            }
+            if (resStr.contains(startStr)) {
+                String count = resStr.split(
+                        "你的活力增加了你使用了活力药水，活力增加了"
+                )[1].split("0")[0];
+                i = Integer.parseInt(count);
+            }
+            i--;
+        } while (!resStr.contains(endStr) || i == 0);
+
+    }
+
+    public static String getMercenaries(int npcId) {
+        String param = "mappush&type=1&npcid=%d";
+        return getPetPkCmd(String.format(param, npcId), String.format("历练-获取佣兵[%d]", npcId));
+    }
+
+    /**
+     * 获取游戏信息
+     * https://fight.pet.qq.com/cgi-bin/petpk?cmd=ledouvip
+     * {"result":"0","msg":"","lvl":"7","score":"13555","speed":"15","day":"102"..}
+     */
+    public static void getGameInformation() {
+        String json = getPetPkCmd("ledouvip");
+        ResultMsg result = JSONObject.parseObject(json, ResultMsg.class);
+
+        System.out.printf("vip-[%s] score[%s][↑ %s/day] last[%s day]%n"
+                , result.getLvl(), result.getScore(), result.getSpeed(), result.getDay());
     }
 
     /**
@@ -208,14 +372,14 @@ public class FightService extends HttpUtils {
     public static void mistyFantasy() {
         String base = "misty&op=%s";
         String timesHaveBeenUsedUp = "次数已用完";
-        String startStr = getPetPkCmd(String.format(base, "start&stage_id=1"), "飘渺幻境-开始");//
+        String startStr = getPetPkCmd(String.format(base, "start&stage_id=1"), "");//
         if (startStr.contains(timesHaveBeenUsedUp)) {
             return;
         }
         for (int i = 0; i < 5; i++) {
             getPetPkCmd(String.format(base, "fight"), "飘渺幻境-挑战");
         }
-        getPetPkCmd(String.format(base, "return"), "飘渺幻境-返回");
+        getPetPkCmd(String.format(base, "return"));
 
     }
 
@@ -277,7 +441,6 @@ public class FightService extends HttpUtils {
 
     }
 
-
     /**
      * 门派-免费木桩
      */
@@ -301,7 +464,7 @@ public class FightService extends HttpUtils {
         String[] str = {"login", "meridian", "daren", "wuzitianshu"};
         for (String text : str) {
             String param = "dailygift&op=draw&key=" + text;
-            getPetPkCmd(param, "领取登录礼包");
+            getPetPkCmd(param, String.format("领取登录礼包[%s]", text));
 
         }
 
@@ -311,7 +474,11 @@ public class FightService extends HttpUtils {
      * 登陆游戏
      */
     public static void loginGames() {
-        getPetPkCmd("limit&op=login", "登陆游戏");
+        String login = "登陆校验失败";
+        String res = getPetPkCmd("limit&op=login", "登陆游戏");
+        if (login.equals(res)) {
+            throw new RuntimeException(login);
+        }
     }
 
     /**
@@ -351,11 +518,13 @@ public class FightService extends HttpUtils {
     public static void luckyGoosePackage() {
         int weekInt = 7;
         String notTimeStr = "不在领奖";
+        String notDaysStr = "天数不够";
         String url = "betogoaway&gb_id=";
         for (int i = 1; i <= weekInt; i++) {
             String msg = getPetPkCmd(url + i, String.format("幸运鹅礼包[%d]", i));
             // 不在领奖时间内！
-            if (msg.contains(notTimeStr)) {
+            if (msg.contains(notTimeStr)
+                    || msg.contains(notDaysStr)) {
                 break;
             }
             //System.out.println("==>幸运鹅礼包 = " + resultStr);
@@ -371,13 +540,19 @@ public class FightService extends HttpUtils {
      */
     private static String getPetPkCmd(String param, String info) {
         String json = getPetPkCmd(param);
+        //System.out.println("json = " + json);
         ResultMsg resultMsg = JSONObject.parseObject(json, ResultMsg.class);
         String msg = resultMsg.getMsg();
         // msg 消息为空就使用源
         if (!StringUtils.hasLength(msg)) {
-            msg = json;
+            msg = resultMsg.getDrop();
+            if (!StringUtils.hasLength(msg)) {
+                msg = json;
+            }
         }
-        System.out.println(info + " = " + msg);
+        if (!"".equals(info)) {
+            System.out.println(info + " = " + msg);
+        }
         return msg;
     }
 
@@ -395,7 +570,7 @@ public class FightService extends HttpUtils {
             url = param;
             cookie = "mode=test";
         }
-      //  System.out.printf("URL[%s]%n", url);
+        //  System.out.printf("URL[%s]%n", url);
         return doGet(url, cookie);
     }
 

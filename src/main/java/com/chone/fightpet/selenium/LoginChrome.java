@@ -14,11 +14,14 @@ public class LoginChrome {
     /**
      * 登录地址
      */
-    private final static String LOGIN_URL = "https://xui.ptlogin2.qq.com/cgi-bin/xlogin?appid=1006102&s_url=https://id.qq.com/index.html%23info";
+//    private final static String LOGIN_URL = "https://xui.ptlogin2.qq.com/cgi-bin/xlogin?appid=1006102&s_url=https://id.qq.com/index.html%23info";
+    private final static String LOGIN_URL = "https://ui.ptlogin2.qq.com/cgi-bin/login?appid=614038002&&s_url=https://dld.qzapp.z.qq.com%2Fqpet%2Fcgi-bin%2Fphonepk%3Fcmd%3Dindex";
+
     /**
      * 成功跳转地址
      */
-    private final static String SUCCESS_URL = "https://id.qq.com";
+//    private final static String SUCCESS_URL = "https://id.qq.com";
+    private final static String SUCCESS_URL = "https://dld.qzapp.z.qq.com";
 
     public static String loginQQ() {
         WebDriver driver = new ChromeDriver();
