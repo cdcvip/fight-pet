@@ -28,6 +28,15 @@ public class ResultMsg {
      */
     private String drop;
 
+    /**
+     * 每日任务-领取详情
+     */
+    private String award;
+    /**
+     *
+     */
+    private List<Task> tasklist;
+
     /********
      * 斗友召回
      * canbecall":[{"level":"38","uin":"QQ","name":"昵称"}
@@ -38,6 +47,10 @@ public class ResultMsg {
      * 获取好友列表
      */
     private List<Uin> info;
+    /**
+     * 获取帮友列表
+     */
+    private List<Uin> list;
 
     /*********
      *  逗乐达人信息
@@ -58,5 +71,19 @@ public class ResultMsg {
      */
     private String day;
 
+    /**
+     * 画卷迷踪 id
+     * ,"repid":"1282722653_7_6920168529858265728",
+     */
+    private String repid;
+
+    /**
+     * 镖行天下-镖师-id[0-3:越大越好]
+     */
+    private String npc_id;
+    /**
+     *
+     */
+    private String looted_count;
 
 }

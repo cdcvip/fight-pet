@@ -24,5 +24,17 @@ public class Uin {
      * 好友列表[等级]
      */
     private String lilian;
+    /**
+     * 武林大会-id
+     * {
+     *  "id": "35510109",
+     *  "now": "83",
+     *  "max": "2048",
+     *  "champion": "芝士奶盖"
+     *         },
+     */
+    private String id;
+    private String champion;
+
 
 }
