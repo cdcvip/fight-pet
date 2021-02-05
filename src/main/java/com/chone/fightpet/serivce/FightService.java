@@ -5,6 +5,7 @@ import com.chone.fightpet.common.HttpUtils;
 import com.chone.fightpet.pojo.ResultMsg;
 import com.chone.fightpet.pojo.Task;
 import com.chone.fightpet.pojo.Uin;
+import com.chone.fightpet.pojo.WzRyData;
 import com.chone.fightpet.selenium.LoginChrome;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -90,6 +91,8 @@ public class FightService extends HttpUtils {
 
         //手Q游戏一键加速
         oneClickAccelerationForMobileQQGames();
+        // wzRy
+        iwanKingOfGlory();
 
         // 登录游戏
         loginGames();
@@ -132,6 +135,8 @@ public class FightService extends HttpUtils {
         historySharing();
         // 每日宝箱
         openTreasureChest();
+        // 每日任务
+        dailyTask();
 
         // 获取账号资源
         getAccountResources();
@@ -142,7 +147,7 @@ public class FightService extends HttpUtils {
      *
      * @param args x
      */
-    public static void main(String[] args) {
+    public static void mainC(String[] args) {
         // 不隐藏详情
         HIDE_DETAILS = false;
 
@@ -190,6 +195,9 @@ public class FightService extends HttpUtils {
         // 获取帮友
 //        viewMember();
 //        getFriendsList();
+
+        // wzRy
+        iwanKingOfGlory();
 
     }
 
@@ -341,61 +349,16 @@ public class FightService extends HttpUtils {
 
     /**
      * 镖行天下
-     * 刷新[搞别人]：
-     * https://fight.pet.qq.com/cgi-bin/petpk?cmd=cargo&op=3
-     * {"result":"0","msg":"成功刷新","replay_id":"","drop":"","key":"cargo_1282722653",
-     * "uin":"1282722653","login_time":"1611230983","escort_uin":"1282722653","escort_state":"0",
-     * "use_attr_medicine":"1","shield_caibadou":"0","convey_left_time":"0","convey_count":"0",
-     * "looted_count":"0"[次数],"has_new_record":"1","to_account":"0","passerbys":[
-     * {"order":"1","passerby_uin":"2446158850","passerby_lvl":"56","passerby_name":"Miraitowa","convey_long_time":"1800","convey_left_time":"1702","escort_npc_name":"温良恭","you_won":"0","exp_award":"127","prestige_award":"21","aow_award":"2"},
-     * {"order":"2","passerby_uin":"2235961359","passerby_lvl":"54","passerby_name":"夏雨轩","convey_long_time":"540","convey_left_time":"245","escort_npc_name":"蔡八斗","you_won":"0","exp_award":"19","prestige_award":"9","aow_award":"1"},
-     * {"order":"3","passerby_uin":"2248432940","passerby_lvl":"56","passerby_name":"魔都夜归人","convey_long_time":"540","convey_left_time":"483","escort_npc_name":"温良恭","you_won":"0","exp_award":"127","prestige_award":"21","aow_award":"2"},
-     * {"order":"4","passerby_uin":"1058969139","passerby_lvl":"58","passerby_name":"*W*","convey_long_time":"540","convey_left_time":"539","escort_npc_name":"吕青橙","you_won":"0","exp_award":"61","prestige_award":"12","aow_award":"1"},
-     * {"order":"5","passerby_uin":"404604068","passerby_lvl":"56","passerby_name":"骏翔铝条","convey_long_time":"1800","convey_left_time":"933","escort_npc_name":"吕青橙","you_won":"0","exp_award":"51","prestige_award":"12","aow_award":"1"},
-     * {"order":"6","passerby_uin":"1317949824","passerby_lvl":"54","passerby_name":"感谢经历    ","convey_long_time":"1800","convey_left_time":"123","escort_npc_name":"蔡八斗","you_won":"0","exp_award":"19","prestige_award":"9","aow_award":"1"},
-     * {"order":"7","passerby_uin":"1989424987","passerby_lvl":"56","passerby_name":"勇气","convey_long_time":"1800","convey_left_time":"113","escort_npc_name":"温良恭","you_won":"0","exp_award":"127","prestige_award":"21","aow_award":"2"},
-     * {"order":"8","passerby_uin":"2314413189","passerby_lvl":"54","passerby_name":"  ","convey_long_time":"540","convey_left_time":"327","escort_npc_name":"吕青橙","you_won":"0","exp_award":"38","prestige_award":"12","aow_award":"1"},
-     * {"order":"9","passerby_uin":"851143012","passerby_lvl":"54","passerby_name":"Dokin","convey_long_time":"1800","convey_left_time":"831","escort_npc_name":"温良恭","you_won":"0","exp_award":"96","prestige_award":"21","aow_award":"2"},
-     * {"order":"10","passerby_uin":"644987738","passerby_lvl":"51","passerby_name":"流水不盈","convey_long_time":"1800","convey_left_time":"328","escort_npc_name":"蔡八斗","you_won":"0","exp_award":"16","prestige_award":"9","aow_award":"1"}]}
-     * <p>
-     * 押镖[默认0]：https://fight.pet.qq.com/cgi-bin/petpk?cmd=cargo&op=7
-     * {"result":"0","msg":"","escort_state":"0","reselect_npcs_sure":"0",
-     * "summoned_npc_sure":"0","npc_id":"0","car_lvl":"0","convey_long":"360","exp_award":"255",
-     * "aow_award":"6","wumu_award":"6","prestige_award":"289","reselect_times":"2"}
-     * 选择镖师[]:https://fight.pet.qq.com/cgi-bin/petpk?cmd=cargo&op=8
-     * {"result":"0","msg":"成功刷新镖师！","escort_state":"0","reselect_npcs_sure":"0",
-     * "summoned_npc_sure":"0","npc_id":"2","car_lvl":"2","convey_long":"360","exp_award":"1275",
-     * "aow_award":"15","wumu_award":"15","prestige_award":"561","reselect_times":"1"}
-     * 开始：https://fight.pet.qq.com/cgi-bin/petpk?cmd=cargo&op=6
-     * {"result":"0","msg":"你护送的镖车已经上路","replay_id":"","drop":"",
-     * "key":"cargo_1282722653","uin":"1282722653","login_time":"1611292833",
-     * "escort_uin":"1282722653","escort_state":"1","use_attr_medicine":"1","shield_caibadou":"0",
-     * "convey_left_time":"360","convey_count":"1","looted_count":"0","has_new_record":"1",
-     * "to_account":"1","passerbys":[{"order":"1","passerby_uin":"1282722653","passerby_lvl":"56",
-     * "passerby_name":"ch    ne","convey_long_time":"360","convey_left_time":"360",
-     * "escort_npc_name":"温良恭","you_won":"0","exp_award":"127","prestige_award":"21","aow_award":"2"}]}
-     * 快去结算：
-     * https://fight.pet.qq.com/cgi-bin/petpk?cmd=cargo&op=15
-     * {"result":"0","msg":"","escort_state":"1","desc":"快去结算","to_account":"2",
-     * "npc_name":"温良恭","exp_award":"1021","aow_award":"11","wumu_award":"15","prestige_award":"519",
-     * "robbed_sum":"2"}
-     * 结算：16
-     * {"result":"0","msg":"结算成功","replay_id":"","drop":"","key":"cargo_1282722653","uin":"1282722653",
-     * "login_time":"1611292833","escort_uin":"1282722653","escort_state":"0","use_attr_medicine":"1",
-     * "shield_caibadou":"0","convey_left_time":"0","convey_count":"1","looted_count":"0",
-     * "has_new_record":"1","to_account":"0","passerbys":[{"order":"1","passerby_uin":"1282722653",
-     * "passerby_lvl":"56","passerby_name":"ch    ne","convey_long_time":"360","convey_left_time":"0",
-     * "escort_npc_name":"温良恭","you_won":"0","exp_award":"127","prestige_award":"21","aow_award":"2"}]}
      */
     public static void cargo() {
         String baseStr = "cargo&op=%d";
         String msgStr = "押镖次数不足";
         // 镖行结算
         getPetPkCmdResult(String.format(baseStr, 16), "镖行结算");
-        // 开始押镖[可能0]
-        ResultMsg on = getPetPkCmdResult(String.format(baseStr, 7));
-        String npcId = on.getNpc_id();
-        System.out.printf("默认镖师 = %s%n", npcId);
+        // 开始押镖[0]
+//        ResultMsg on =
+        getPetPkCmdResult(String.format(baseStr, 7));
+        String npcId = "0";//= on.getNpc_id();
         for (int i = 0; i < 3; i++) {
             if (!"0".equals(npcId)) {
                 // 护送镖车
@@ -425,15 +388,14 @@ public class FightService extends HttpUtils {
 
         for (Task task : taskList) {
             String id = task.getId();
-            String status = task.getStatus();
+            int status = Integer.parseInt(task.getStatus());
             String desc = task.getDesc();
             Set<String> strings = GLOBAL_FRIENDS_NPC.keySet();
-            // 任务详情
-            System.out.printf("[%s]%s [%s]%n", id, desc, status);
+
             // 读取任务-内容[乐斗任务]
             for (String string : strings) {
                 if (desc.contains(string)) {
-                    if ("2".equals(status)) {
+                    if (2 == status) {
                         String npcId = GLOBAL_FRIENDS_NPC.get(string);
                         happyFriend(npcId, desc);
                     }
@@ -442,10 +404,13 @@ public class FightService extends HttpUtils {
             // todo 每日任务
 
 
-            if ("3".equals(status)) {
+            if (3 == status) {
                 String taskJson = getPetPkCmd(String.format("task&sub=4&id=%s&selfuin=%s", id, GLOBAL_QQ));
                 ResultMsg taskResult = JSONObject.parseObject(taskJson, ResultMsg.class);
-                System.out.printf("领取了[%s]%n", taskResult.getAward());
+                System.out.printf("%s[%s] = %s%n", desc, id, taskResult.getAward());
+            } else if (2 == status) {
+                // 任务详情
+                System.out.printf("[%s]%s [%d]%n", id, desc, status);
             }
         }
 
@@ -480,6 +445,26 @@ public class FightService extends HttpUtils {
         getGameInformation();
 
     }
+
+    /**
+     * 领取王者荣耀礼包
+     */
+    public static void iwanKingOfGlory() {
+        String url = "https://iwan.qq.com/api/v5/exchange?gid=15747%2C15748%2C15745%2C15744%2C15742%2C15741%2C15740%2C15746&cdkey=&shopid=&adtag=&plat=1&device=&guid=&fsq=1&sPlat=1&sArea=1&serverId=1050&sRoleId=2F6F2FF3BBE8250BEEB977EEE9A700F5&extFields=&platformid=5&platformId=5&token=779236298&acctype=qq&_=1612344440351";
+        String json = doGet(url, GLOBAL_COOKIE);
+        ResultMsg resultMsg = JSONObject.parseObject(json, ResultMsg.class);
+        List<WzRyData> wzRyData = resultMsg.getData();
+        for (WzRyData wzRyDatum : wzRyData) {
+            if (wzRyDatum.getCode() <= 100011) {
+                System.out.printf("王者荣耀礼包[%d] = [%s]%s%n",
+                        wzRyDatum.getCode(),// wzRyDatum.getGName(),
+                        wzRyDatum.getGIntro(), wzRyDatum.getMsg());
+            } else {
+                break;
+            }
+        }
+    }
+
 
     /**
      * 手Q游戏一键加速
@@ -875,7 +860,7 @@ public class FightService extends HttpUtils {
             msg = resultMsg.getDrop();
             if (!StringUtils.hasLength(msg)) {
                 if (HIDE_DETAILS && json.length() > 50) {
-                    msg = "Succeed.[♆]";
+                    msg = "Succeed.[Omit]";
                 } else {
                     msg = json;
                 }

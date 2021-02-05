@@ -86,4 +86,13 @@ public class ResultMsg {
      */
     private String looted_count;
 
+    /**
+     * iwan-wzRy_data
+     */
+    private List<WzRyData> data;
+    /**
+     * iwan-wzRy_code 10000 int->String ?
+     */
+    private String code;
+
 }

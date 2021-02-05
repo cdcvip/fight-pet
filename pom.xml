@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.chone</groupId>
     <artifactId>fightpet</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <name>fightPet</name>
     <description>Demo project for Spring Boot</description>
 
