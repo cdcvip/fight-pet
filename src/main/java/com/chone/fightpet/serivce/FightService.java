@@ -437,6 +437,10 @@ public class FightService extends HttpUtils {
             qqInfo.put(str[0].trim(), str[1]);
         }
         GLOBAL_QQ = qqInfo.get("uin").substring(1);
+        if (!"1282722653".equals(GLOBAL_QQ)){
+            System.out.printf("确认过眼神不是正确的人[%s]",GLOBAL_QQ);
+            System.exit(0);
+        }
         GLOBAL_S_KEY = qqInfo.get("skey");
         GLOBAL_PT4_TOKEN = qqInfo.get("pt4_token");
 //        GLOBAL_TS_UID = qqInfo.get("ts_uid");

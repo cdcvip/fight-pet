@@ -1,8 +1,6 @@
 package com.chone.fightpet.selenium;
 
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 /**
@@ -28,7 +26,8 @@ public class LoginChrome {
         driver.get(LOGIN_URL);
         Dimension dimension = new Dimension(200, 600);
         driver.manage().window().setSize(dimension);
-
+        // 自动点击已登录QQ
+        driver.findElement(new By.ByXPath("//*[@id=\"qlogin_list\"]/a")).click();
         String currentUrl;
         do {
             currentUrl = driver.getCurrentUrl();
@@ -36,9 +35,7 @@ public class LoginChrome {
         } while (!currentUrl.startsWith(SUCCESS_URL));
 
         String cookie = (String) ((JavascriptExecutor) driver).executeScript("return document.cookie");
-
         System.out.println("cookie = " + cookie);
-
         driver.quit();
         return cookie;
     }
