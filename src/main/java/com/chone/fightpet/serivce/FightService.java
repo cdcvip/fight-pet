@@ -37,7 +37,7 @@ public class FightService extends HttpUtils {
     /**
      * 全局cookie
      */
-//    private final static String GLOBAL_COOKIE = "cookie";
+//    private final static String GLOBAL_COOKIE = "_qpsvr_localtk=0.7957539412213799; uin=o1282722653; skey=@5XUnDlCVh; RK=9mQtUAw7UQ; ptcz=b09e30e46a06cfc4164c29dbde354dfeb96991ea0094922d0c3235e9e7395e91";
     private static final String GLOBAL_COOKIE = LoginChrome.loginQQ();
     /**
      * qq,s-key,pt4_token,ts_uid
@@ -50,15 +50,19 @@ public class FightService extends HttpUtils {
     /**
      * 账号参数
      */
-    private static String GLOBAL_LOG;//="x斗豆[150] 斗币[15070] 鹅币[0.00] 今日活跃度[13] 等级[56] 体力[100/100] 活力[50/50] 阅历[49384] 战斗力[897.7]";
+    private static String GLOBAL_LOG;
     /**
      * 等级、活力、体力、好友列表、帮派成员
      */
     private static String GLOBAL_LEVEL = "57";
     private static String GLOBAL_VIGOR = "10";
-    private static String GLOBAL_PHYSICAL_STRENGTH = "10";
+    private static Integer GLOBAL_PHYSICAL_STRENGTH = 10;
     private static List<Uin> GLOBAL_FRIENDS;
     private static List<Uin> GLOBAL_MEMBER;
+    /**
+     * 斗友列表
+     */
+    private static List<Uin> GLOBAL_STRANGER;
     /**
      * 好友_NPC、帮派_NPC
      */
@@ -82,8 +86,13 @@ public class FightService extends HttpUtils {
         scrollDungeon();
         // 镖行天下
         cargo();
-        // 获取好友列表
-        getFriendsList();
+        // 使用经验木简
+        useExperienceWoodenSlip();
+        // 帮派-供奉守护神
+        enshrineThePatronSaint();
+        // 获取好友列表[1好友;3斗友]
+        getFriendsList(1);
+        getFriendsList(3);
         // 获取帮友
         viewMember();
         // 每日任务
@@ -152,7 +161,11 @@ public class FightService extends HttpUtils {
         HIDE_DETAILS = false;
 
         // 解析cookie参数
-//        parseCookieParameters();
+        parseCookieParameters();
+        // 获取好友列表
+//        getFriendsList();
+        // 获取帮友
+//        viewMember();
 
 //        getGameInformation();
         // 佣兵
@@ -175,7 +188,7 @@ public class FightService extends HttpUtils {
 
         // 每日任务
 
-        //  dailyTask();
+//        dailyTask();
 
         //佣兵
 
@@ -183,7 +196,7 @@ public class FightService extends HttpUtils {
 
 
         // 获取好友列表
-        //  getFriendsList();
+//          getFriendsList();
 
         //画卷迷踪
 //        scrollDungeon();
@@ -197,7 +210,27 @@ public class FightService extends HttpUtils {
 //        getFriendsList();
 
         // wzRy
-        iwanKingOfGlory();
+//        iwanKingOfGlory();
+
+//        startUp();
+
+        // 获取好友列表[1好友;3斗友]
+//        getFriendsList(1);
+//        getFriendsList(1);
+//        Set<String> strings = GLOBAL_FRIENDS_NPC.keySet();
+//
+//        for (String string : strings) {
+//
+//            String uinId = GLOBAL_FRIENDS_NPC.get(string);
+//            String uinName = string;
+//            System.out.println(uinId + " = " + uinName);
+//        }
+
+        //使用经验木简
+        useExperienceWoodenSlip();
+        //帮派-供奉守护神
+        enshrineThePatronSaint();
+
 
     }
 
@@ -305,7 +338,7 @@ public class FightService extends HttpUtils {
             // start
             switch (str) {
                 case "体力":
-                    GLOBAL_PHYSICAL_STRENGTH = value.split("/")[0];
+                    GLOBAL_PHYSICAL_STRENGTH = Integer.parseInt(value.split("/")[0]);
                     break;
                 case "活力":
                     GLOBAL_VIGOR = value.split("/")[0];
@@ -391,18 +424,35 @@ public class FightService extends HttpUtils {
             int status = Integer.parseInt(task.getStatus());
             String desc = task.getDesc();
             Set<String> strings = GLOBAL_FRIENDS_NPC.keySet();
-
-            // 读取任务-内容[乐斗任务]
-            for (String string : strings) {
-                if (desc.contains(string)) {
-                    if (2 == status) {
+            if (2 == status) {
+                // 读取任务-内容[乐斗任务]
+                for (String string : strings) {
+                    if (desc.contains(string)) {
                         String npcId = GLOBAL_FRIENDS_NPC.get(string);
                         happyFriend(npcId, desc);
+                        status = 3;
                     }
                 }
-            }
-            // todo 每日任务
+                // 挑战三次陌生人！
+                if (desc.contains("挑战三次陌生人")) {
+                    // 帮友 GLOBAL_STRANGER
+                    int size = GLOBAL_STRANGER.size();
+                    int stats = 3;
+                    for (int i = 1; i <= stats; i++) {
+                        Uin uin = GLOBAL_STRANGER.get(size - i);
+                        String uinId = uin.getUin();
+//                    String uinName = uin.getName();
+//                    System.out.println(uinId + " = " + uinName);
+                        String echo = happyFriend(uinId, null);
+                        if (GLOBAL_QQ.equals(echo)) {
+                            stats++;
+                        }
+                    }
+                    status = 3;
+                }
 
+                // todo 每日任务-代码需优化
+            }
 
             if (3 == status) {
                 String taskJson = getPetPkCmd(String.format("task&sub=4&id=%s&selfuin=%s", id, GLOBAL_QQ));
@@ -437,8 +487,8 @@ public class FightService extends HttpUtils {
             qqInfo.put(str[0].trim(), str[1]);
         }
         GLOBAL_QQ = qqInfo.get("uin").substring(1);
-        if (!"1282722653".equals(GLOBAL_QQ)){
-            System.out.printf("确认过眼神不是正确的人[%s]",GLOBAL_QQ);
+        if (!"1282722653".equals(GLOBAL_QQ)) {
+            System.out.printf("确认过眼神不是正确的人[%s]", GLOBAL_QQ);
             System.exit(0);
         }
         GLOBAL_S_KEY = qqInfo.get("skey");
@@ -529,7 +579,11 @@ public class FightService extends HttpUtils {
         if (isMember) {
             GLOBAL_MEMBER = uinList;
         } else {
-            GLOBAL_FRIENDS = uinList;
+            if (count != 0) {
+                GLOBAL_FRIENDS = uinList;
+            } else {
+                GLOBAL_STRANGER = uinList;
+            }
         }
         // 将好友与帮友NPC合并
         if (GLOBAL_FRIENDS_NPC == null) {
@@ -541,11 +595,17 @@ public class FightService extends HttpUtils {
 
     /**
      * 获取好友列表
+     * sub=1[1好友;3斗友]
+     *
+     * @param sub [1好友;3斗友]
      */
-    public static void getFriendsList() {
-        String str = "view&kind=1&sub=1&selfuin=" + GLOBAL_QQ;
-        getMembers(str, 7);
-
+    public static void getFriendsList(int sub) {
+        String str = String.format("view&kind=1&sub=%d&selfuin=%s", sub, GLOBAL_QQ);
+        if (sub == 1) {
+            getMembers(str, 7);
+        } else {
+            getMembers(str, 0);
+        }
     }
 
     /**
@@ -553,17 +613,26 @@ public class FightService extends HttpUtils {
      *
      * @param uin  qq
      * @param name 昵称[非必填]
-     * @return res
+     * @return echo [self]qq
      */
     public static String happyFriend(String uin, String name) {
-        String param;
-        // fight&uin=4  puin[好友]/uin[帮友]
-        if (uin.startsWith(NPC_SIGN)) {
-            param = "fight&puin=" + uin;
-        } else {
-            param = "fight&uin=" + uin;
+//        String param;
+        StringBuilder param = new StringBuilder("fight&");
+
+        if (uin.equals(GLOBAL_QQ)) {
+            return GLOBAL_QQ;
         }
-        return getPetPkCmd(param, String.format("乐斗好友[%s]", name));
+        // fight&uin=4&puin[好友]/uin[帮友]
+        // fight&type=4&puin=1842567252
+        if (name == null) {
+            param.append("type=4&puin=");
+        } else if (uin.startsWith(NPC_SIGN)) {
+            param.append("puin=");
+        } else {
+            param.append("uin=");
+        }
+        param.append(uin);
+        return getPetPkCmd(param.toString(), String.format("乐斗[%s]", name == null ? uin : name));
     }
 
     /**
@@ -577,7 +646,7 @@ public class FightService extends HttpUtils {
         noFighting.add("1060277949");
         // 您已经太累了
         String endStr = "您已经太累了";
-        int physical = Integer.parseInt(GLOBAL_PHYSICAL_STRENGTH) / 10;
+        int physical = GLOBAL_PHYSICAL_STRENGTH / 10;
 //        physical += 9;
         // 前7个都是NPC
         for (int i = 0; i < physical; i++) {
@@ -592,10 +661,12 @@ public class FightService extends HttpUtils {
             String echo = happyFriend(qq, uin.getName());
             if (echo.contains("请明天再来挑战吧")) {
                 physical++;
+                continue;
             }
             if (echo.contains(endStr)) {
                 break;
             }
+            GLOBAL_PHYSICAL_STRENGTH -= 10;
         }
     }
 
@@ -738,6 +809,30 @@ public class FightService extends HttpUtils {
      */
     public static void gangTotalActivePackage() {
         getPetPkCmd("factionOp&subtype=4", "帮派-总活跃礼包");
+    }
+
+    /**
+     * 供奉守护神[物品id]
+     * {"result":"0","msg":"供奉成功，守护神获得1.6点饥饿度。同时获得4贡献度"}
+     */
+    public static void enshrineThePatronSaint() {
+        getPetPkCmd("feeddemo&id=3038", "帮派-供奉守护神");
+    }
+
+    /**
+     * 使用经验木简[物品id]
+     * cmd=use&selfuin=1282722653&id=3178
+     * {"result":"0","msg":"使用经验木简成功","goods_dt":[{"id":"3178","num":"-1"}]}
+     */
+    public static void useExperienceWoodenSlip() {
+        String param = String.format("use&selfuin=%s&id=3178", GLOBAL_QQ);
+        for (int i = 1; i <= 10; i++) {
+            String echo = getPetPkCmd(param, String.format("使用经验木简[%d]", i));
+            //该物品今天已经不能再使用了
+            if (echo.contains("不能再使用了")){
+                break;
+            }
+        }
     }
 
     /**
@@ -924,6 +1019,3 @@ public class FightService extends HttpUtils {
     }
 
 }
-
-
-

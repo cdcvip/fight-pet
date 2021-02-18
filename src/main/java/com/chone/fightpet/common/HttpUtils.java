@@ -3,8 +3,6 @@ package com.chone.fightpet.common;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

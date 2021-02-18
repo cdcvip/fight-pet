@@ -22,12 +22,15 @@ public class LoginChrome {
     private final static String SUCCESS_URL = "https://dld.qzapp.z.qq.com";
 
     public static String loginQQ() {
+        // Optional. If not specified, WebDriver searches the PATH for chromedriver.
+//        System.setProperty("webdriver.chrome.driver", "D:\\ProgramData\\Java\\jdk1.8.0_281\\bin\\chromedriver.exe");
+
         WebDriver driver = new ChromeDriver();
         driver.get(LOGIN_URL);
         Dimension dimension = new Dimension(200, 600);
         driver.manage().window().setSize(dimension);
         // 自动点击已登录QQ
-        driver.findElement(new By.ByXPath("//*[@id=\"qlogin_list\"]/a")).click();
+//        driver.findElement(new By.ByXPath("//*[@id=\"qlogin_list\"]/a")).click();
         String currentUrl;
         do {
             currentUrl = driver.getCurrentUrl();

@@ -39,6 +39,7 @@
             <artifactId>mockwebserver</artifactId>
             <version>4.7.2</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
