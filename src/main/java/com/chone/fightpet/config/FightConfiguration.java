@@ -1,8 +1,8 @@
 package com.chone.fightpet.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+//import org.springframework.boot.context.properties.ConfigurationProperties;
+//import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
@@ -12,8 +12,8 @@ import java.util.Map;
  * @author chone
  */
 @Slf4j
-@Configuration
-@ConfigurationProperties(prefix = "fight")
+//@Configuration
+//@ConfigurationProperties(prefix = "fight")
 public class FightConfiguration {
 
     private final static String URL = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=";

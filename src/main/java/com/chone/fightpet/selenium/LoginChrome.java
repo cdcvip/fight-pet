@@ -30,7 +30,7 @@ public class LoginChrome {
         Dimension dimension = new Dimension(200, 600);
         driver.manage().window().setSize(dimension);
         // 自动点击已登录QQ
-//        driver.findElement(new By.ByXPath("//*[@id=\"qlogin_list\"]/a")).click();
+        driver.findElement(new By.ByXPath("//*[@id=\"qlogin_list\"]/a")).click();
         String currentUrl;
         do {
             currentUrl = driver.getCurrentUrl();

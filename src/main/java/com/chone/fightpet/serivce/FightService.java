@@ -1,18 +1,18 @@
 package com.chone.fightpet.serivce;
 
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.chone.fightpet.common.HttpUtils;
-import com.chone.fightpet.pojo.ResultMsg;
-import com.chone.fightpet.pojo.Task;
-import com.chone.fightpet.pojo.Uin;
-import com.chone.fightpet.pojo.WzRyData;
+import com.chone.fightpet.pojo.*;
 import com.chone.fightpet.selenium.LoginChrome;
-import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -21,7 +21,6 @@ import java.util.*;
  * @author chone
  */
 @Service
-@Slf4j
 public class FightService extends HttpUtils {
 
     /**
@@ -37,7 +36,7 @@ public class FightService extends HttpUtils {
     /**
      * 全局cookie
      */
-//    private final static String GLOBAL_COOKIE = "_qpsvr_localtk=0.7957539412213799; uin=o1282722653; skey=@5XUnDlCVh; RK=9mQtUAw7UQ; ptcz=b09e30e46a06cfc4164c29dbde354dfeb96991ea0094922d0c3235e9e7395e91";
+//    private final static String GLOBAL_COOKIE = "_qpsvr_localtk=0.22114789397917778; uin=o1282722653; skey=@3uf82miwd; RK=8uQlAiw7UQ; ptcz=aac5c7455fb569f3ca405e29d7e73f5b851494ca54fc66c34fdcb7e6b7f61c80";
     private static final String GLOBAL_COOKIE = LoginChrome.loginQQ();
     /**
      * qq,s-key,pt4_token,ts_uid
@@ -68,6 +67,38 @@ public class FightService extends HttpUtils {
      */
     private static Map<String, String> GLOBAL_FRIENDS_NPC;
 
+    private static Writer LOG_OUT;
+    private static FileOutputStream LOG_FW;
+
+    static {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
+        String format = dateFormat.format(new Date());
+        //写好输出位置文件
+        String logPath = "\\log\\" + format + ".log";
+        File writeFile;
+        try {
+            writeFile = new File(logPath);
+            // 如果文本文件不存在则创建它
+            if (!writeFile.exists()) {
+                File path = new File("\\log");
+                if (!path.exists()) {
+                    if (path.mkdirs()) {
+                        System.out.println("The log path does not exist and has been created");
+                    }
+                }
+                if (writeFile.createNewFile()) {
+                    // 重新实例化
+                    writeFile = new File(logPath);
+                }
+            }
+            LOG_FW = new FileOutputStream(writeFile, true);
+            LOG_OUT = new OutputStreamWriter(LOG_FW, StandardCharsets.UTF_8);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 正式驱动
      */
@@ -86,6 +117,8 @@ public class FightService extends HttpUtils {
         scrollDungeon();
         // 镖行天下
         cargo();
+        // 习练兵法
+        studyTheArtOfWar();
         // 使用经验木简
         useExperienceWoodenSlip();
         // 帮派-供奉守护神
@@ -138,17 +171,19 @@ public class FightService extends HttpUtils {
         mineChallenge();
         // 帮派-活跃150
         gangTotalActivePackage();
-        // 今日活跃礼包
-        todaySActivityPack();
         // 历程分享
         historySharing();
         // 每日宝箱
         openTreasureChest();
         // 每日任务
         dailyTask();
+        // 今日活跃礼包
+        todaySActivityPack();
 
         // 获取账号资源
         getAccountResources();
+        // 日志完成
+        logClose();
     }
 
     /**
@@ -227,11 +262,18 @@ public class FightService extends HttpUtils {
 //        }
 
         //使用经验木简
-        useExperienceWoodenSlip();
+//        useExperienceWoodenSlip();
         //帮派-供奉守护神
-        enshrineThePatronSaint();
+//        enshrineThePatronSaint();
+        // 研习兵法
+//        studyTheArtOfWar();
+
+        //今日活跃度礼包
+//        todaySActivityPack();
 
 
+        // 日志完成
+        logClose();
     }
 
     /**
@@ -254,7 +296,7 @@ public class FightService extends HttpUtils {
             int index = repId.lastIndexOf("_");
             repId = repId.substring(GLOBAL_QQ.length() + 1, index);
             msg = resultMsg.getMsg();
-            System.out.printf("画卷迷踪[%s] = %s%n", repId, msg);
+            log(String.format("画卷迷踪[%s]", repId), msg);
         } while (!msg.contains("弱爆了"));
     }
 
@@ -299,7 +341,7 @@ public class FightService extends HttpUtils {
         String html = getPhonePk("cmd=index");
         Document doc = Jsoup.parse(html);
         if (doc == null) {
-            System.out.println("DOC IS NULL");
+            log("DOC", "IS NULL");
             return;
         }
         String info = doc.getElementById("id")
@@ -355,9 +397,9 @@ public class FightService extends HttpUtils {
         if (!StringUtils.hasLength(GLOBAL_LOG)) {
             GLOBAL_LOG = "x" + one.toString();
         } else {
-            System.out.println(GLOBAL_LOG);
+            log("", GLOBAL_LOG);
         }
-        System.out.println("o" + one.toString());
+        log("", "o" + one.toString());
 
     }
 
@@ -396,7 +438,7 @@ public class FightService extends HttpUtils {
             if (!"0".equals(npcId)) {
                 // 护送镖车
                 ResultMsg start = getPetPkCmdResult(String.format(baseStr, 6));
-                System.out.printf("镖行天下 = %s%n", start.getMsg());
+                log("镖行天下", start.getMsg());
                 break;
             }
             // 刷新镖师
@@ -406,7 +448,34 @@ public class FightService extends HttpUtils {
                 break;
             }
             npcId = refresh.getNpc_id();
-            System.out.printf("刷新镖师[%s] = %s%n", npcId, msg);
+            log(String.format("刷新镖师[%s]", npcId), msg);
+        }
+
+    }
+
+
+    /**
+     * 兵法研习
+     * {"base_id":"2544","level":"5","progress":"21","cost":"2","current_desc":"生命总共增加12点","next_desc":"生命总共增加16点"},
+     * {"base_id":"2570","level":"10","progress":"75","cost":"4","current_desc":"第一回合释放，造成36点伤害","next_desc":"第一回合释放，造成42点伤害"},
+     * {"base_id":"21001","level":"7","progress":"81","cost":"4","current_desc":"暴击几率增加7%","next_desc":"暴击几率增加8%"},
+     * {"base_id":"21032","level":"6","progress":"26","cost":"4","current_desc":"受到暴击几率降低6%","next_desc":"受到暴击几率降低7%"}
+     */
+    public static void studyTheArtOfWar() {
+        // 获取兵法详情
+        //  ResultMsg resultMsg = getPetPkCmdResult("brofight&subtype=5");
+        //  List<Skill> skills = resultMsg.getSkills();
+        //  for (Skill skill : skills) {
+        //      System.out.println(skill.getBase_id()+" = " + skill.getLevel());
+        //  }
+
+        String[] ids = {"2570", "2544"};
+        for (String id : ids) {
+            String param = String.format("brofight&skill_base_id=%s&subtype=4", id);
+            String json = getPetPkCmd(param);
+            //{"result":"0","msg":"2","artOf_war_count":"374","wumu_yishu_count":"577","levelup":"0"}
+            //{"result":"0","msg":"2","art_of_war_count":"374","wumu_yishu_count":"573","levelup":"0"}
+            log(String.format("兵法研习[%s]", id), json);
         }
 
     }
@@ -450,6 +519,12 @@ public class FightService extends HttpUtils {
                     }
                     status = 3;
                 }
+                //[118]研习任意兵法一次。 [2]
+                // 已转为每次执行
+                // if (desc.contains("兵法")) {
+                //     studyTheArtOfWar();
+                // }
+
 
                 // todo 每日任务-代码需优化
             }
@@ -457,10 +532,10 @@ public class FightService extends HttpUtils {
             if (3 == status) {
                 String taskJson = getPetPkCmd(String.format("task&sub=4&id=%s&selfuin=%s", id, GLOBAL_QQ));
                 ResultMsg taskResult = JSONObject.parseObject(taskJson, ResultMsg.class);
-                System.out.printf("%s[%s] = %s%n", desc, id, taskResult.getAward());
+                log(String.format("%s[%s]", desc, id), taskResult.getAward());
             } else if (2 == status) {
                 // 任务详情
-                System.out.printf("[%s]%s [%d]%n", id, desc, status);
+                log("", String.format("[%s]%s %d", id, desc, status));
             }
         }
 
@@ -488,14 +563,14 @@ public class FightService extends HttpUtils {
         }
         GLOBAL_QQ = qqInfo.get("uin").substring(1);
         if (!"1282722653".equals(GLOBAL_QQ)) {
-            System.out.printf("确认过眼神不是正确的人[%s]", GLOBAL_QQ);
+            log("确认过眼神不是正确的人", GLOBAL_QQ);
             System.exit(0);
         }
         GLOBAL_S_KEY = qqInfo.get("skey");
         GLOBAL_PT4_TOKEN = qqInfo.get("pt4_token");
 //        GLOBAL_TS_UID = qqInfo.get("ts_uid");
 
-        System.out.printf("GlobalQQ[%s] ", GLOBAL_QQ);
+        log("GlobalQQ", GLOBAL_QQ);
         getGameInformation();
 
     }
@@ -510,9 +585,8 @@ public class FightService extends HttpUtils {
         List<WzRyData> wzRyData = resultMsg.getData();
         for (WzRyData wzRyDatum : wzRyData) {
             if (wzRyDatum.getCode() <= 100011) {
-                System.out.printf("王者荣耀礼包[%d] = [%s]%s%n",
-                        wzRyDatum.getCode(),// wzRyDatum.getGName(),
-                        wzRyDatum.getGIntro(), wzRyDatum.getMsg());
+                log(String.format("王者荣耀礼包[%d]", wzRyDatum.getCode()),
+                        String.format("[%s]%s", wzRyDatum.getGIntro(), wzRyDatum.getMsg()));
             } else {
                 break;
             }
@@ -710,9 +784,9 @@ public class FightService extends HttpUtils {
     public static void getGameInformation() {
         String json = getPetPkCmd("ledouvip");
         ResultMsg result = JSONObject.parseObject(json, ResultMsg.class);
-
-        System.out.printf("vip-[%s] score[%s][↑ %s/day] last[%s day]%n"
-                , result.getLvl(), result.getScore(), result.getSpeed(), result.getDay());
+        log("",
+                String.format("vip-[%s] score[%s][↑ %s/day] last[%s day]"
+                        , result.getLvl(), result.getScore(), result.getSpeed(), result.getDay()));
     }
 
     /**
@@ -829,26 +903,35 @@ public class FightService extends HttpUtils {
         for (int i = 1; i <= 10; i++) {
             String echo = getPetPkCmd(param, String.format("使用经验木简[%d]", i));
             //该物品今天已经不能再使用了
-            if (echo.contains("不能再使用了")){
+            if (echo.contains("不能再使用了")) {
                 break;
             }
         }
     }
 
+
     /**
      * 帮派-矿洞挑战
      */
     public static void mineChallenge() {
+        // 获取战况
+        String baseStr = "factionmine";
+        ResultMsg battle = getPetPkCmdResult(baseStr);
+        String rewardMessage = battle.getReward_message();
+        // 战斗没结算没有消息内容
+        if (StringUtils.hasLength(rewardMessage)) {
+            // 副本通关 领取奖励成功！{"result":"0","msg":"领取奖励成功！"}
+            getPetPkCmdResult(baseStr + "&op=reward");
+        }
         // 可挑战3次
         int numberOfChallenges = 3;
         for (int i = 0; i < numberOfChallenges; i++) {
-            String json = getPetPkCmd("factionmine&op=fight");
-            ResultMsg result = JSONObject.parseObject(json, ResultMsg.class);
+            ResultMsg result = getPetPkCmdResult(baseStr + "&op=fight");
             String resultStr = result.getResult();
             if ("0".equals(resultStr)) {
                 resultStr = "Succeed";
             }
-            System.out.printf("矿洞挑战[%d] = %s%n", i, resultStr);
+            log(String.format("矿洞挑战[%d]", i), resultStr);
         }
 
     }
@@ -917,7 +1000,7 @@ public class FightService extends HttpUtils {
         String url = "weekgiftbag&sub=1&id=";
         for (int i = 1; i <= weekInt; i++) {
             String msg = getPetPkCmd(url + i, "周周礼包");
-            System.out.println("msg = " + msg);
+            log("msg", msg);
         }
 
     }
@@ -951,22 +1034,33 @@ public class FightService extends HttpUtils {
      */
     private static String getPetPkCmd(String param, String info) {
         String json = getPetPkCmd(param);
-        //System.out.println("json = " + json);
-        ResultMsg resultMsg = JSONObject.parseObject(json, ResultMsg.class);
-        String msg = resultMsg.getMsg();
-        // msg 消息为空就使用源
-        if (!StringUtils.hasLength(msg)) {
-            msg = resultMsg.getDrop();
+//        System.out.println("json = " + json);
+        ResultMsg resultMsg = null;
+        try {
+            resultMsg = JSONObject.parseObject(json, ResultMsg.class);
+        } catch (JSONException e) {
+            System.out.println("fastjson-failure");
+        }
+        String msg;
+        if (resultMsg != null) {
+            msg = resultMsg.getMsg();
+//            System.out.println("msg = " + msg);
+            // msg 消息为空就使用源
             if (!StringUtils.hasLength(msg)) {
-                if (HIDE_DETAILS && json.length() > 50) {
-                    msg = "Succeed.[Omit]";
-                } else {
-                    msg = json;
+                msg = resultMsg.getDrop();
+                if (!StringUtils.hasLength(msg)) {
+                    if (HIDE_DETAILS && json.length() > 50) {
+                        msg = "Succeed.[Omit]";
+                    } else {
+                        msg = json;
+                    }
                 }
             }
+        } else {
+            msg = "error";
         }
         if (!"".equals(info)) {
-            System.out.println(info + " = " + msg);
+            log(info, msg);
         }
         return msg;
     }
@@ -981,7 +1075,7 @@ public class FightService extends HttpUtils {
     private static ResultMsg getPetPkCmdResult(String param, String info) {
         ResultMsg resultMsg = getPetPkCmdResult(param);
         if (!"".equals(info)) {
-            System.out.println(info + " = " + resultMsg.getMsg());
+            log(info, resultMsg.getMsg());
         }
         return resultMsg;
     }
@@ -1016,6 +1110,30 @@ public class FightService extends HttpUtils {
     public static String getPhonePk(String param) {
         String url = PHONE_PK + param;
         return doGet(url, GLOBAL_COOKIE);
+    }
+
+    private static void log(String head, String detail) {
+        String text = head + " => " + detail;
+        System.out.println(text);
+        try {
+            LOG_OUT.write(text);
+            //写入换行
+            LOG_OUT.write(System.getProperty("line.separator"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void logClose() {
+        try {
+            LOG_OUT.close();
+            LOG_FW.flush();
+            LOG_FW.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 }

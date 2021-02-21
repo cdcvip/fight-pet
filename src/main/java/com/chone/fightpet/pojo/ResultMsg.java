@@ -95,4 +95,15 @@ public class ResultMsg {
      */
     private String code;
 
+    /**
+     * 兵法研习
+     * skills【List<Skill>】
+     */
+    private Object skills;
+
+    /**
+     * 矿洞战斗结算
+     *  "reward_message":"你所在的帮派击败了矿洞第五层困难难度的所有入侵者，在这场战斗中你的总伤害排名第21名。",
+     */
+    private String reward_message;
 }
