@@ -106,4 +106,26 @@ public class ResultMsg {
      *  "reward_message":"你所在的帮派击败了矿洞第五层困难难度的所有入侵者，在这场战斗中你的总伤害排名第21名。",
      */
     private String reward_message;
+
+
+    /**
+     * 天界十二宫-当前能够挑战关卡
+     */
+    private String max_scene_id;
+    /**
+     * 天界十二宫-当前挑战关卡[小id]
+     */
+    private String current_scene_id;
+    /**
+     * 天界十二宫-上次挑战关卡
+     */
+//    private String latest_scene_id;
+
+    /**
+     * 天界十二宫-情景
+     */
+    private Scene scene;
+
+
+
 }

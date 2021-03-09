@@ -2,6 +2,7 @@ package com.chone.fightpet.serivce;
 
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.chone.fightpet.common.ConfigUtils;
 import com.chone.fightpet.common.HttpUtils;
 import com.chone.fightpet.pojo.*;
 import com.chone.fightpet.selenium.LoginChrome;
@@ -36,8 +37,8 @@ public class FightService extends HttpUtils {
     /**
      * 全局cookie
      */
-//    private final static String GLOBAL_COOKIE = "_qpsvr_localtk=0.22114789397917778; uin=o1282722653; skey=@3uf82miwd; RK=8uQlAiw7UQ; ptcz=aac5c7455fb569f3ca405e29d7e73f5b851494ca54fc66c34fdcb7e6b7f61c80";
-    private static final String GLOBAL_COOKIE = LoginChrome.loginQQ();
+    private static String GLOBAL_COOKIE;
+//    private static final String GLOBAL_COOKIE = LoginChrome.loginQQ();
     /**
      * qq,s-key,pt4_token,ts_uid
      */
@@ -53,11 +54,22 @@ public class FightService extends HttpUtils {
     /**
      * 等级、活力、体力、好友列表、帮派成员
      */
-    private static String GLOBAL_LEVEL = "57";
-    private static String GLOBAL_VIGOR = "10";
+    private static String GLOBAL_LEVEL = "59";
+    /**
+     * 活力
+     */
+    private static String GLOBAL_ENERGY = "10";
+    /**
+     * 体力
+     */
     private static Integer GLOBAL_PHYSICAL_STRENGTH = 10;
+    /**
+     * 好友列表、帮派成员
+     */
     private static List<Uin> GLOBAL_FRIENDS;
     private static List<Uin> GLOBAL_MEMBER;
+
+//    private static List<Map> GLOBAL_TU_DI;
     /**
      * 斗友列表
      */
@@ -69,18 +81,23 @@ public class FightService extends HttpUtils {
 
     private static Writer LOG_OUT;
     private static FileOutputStream LOG_FW;
+    /**
+     * config
+     */
+    private static final ConfigUtils CONFIG_UTILS = new ConfigUtils();
+    private static final Properties CONFIG_PROPERTIES = CONFIG_UTILS.load();
 
     static {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
         String format = dateFormat.format(new Date());
         //写好输出位置文件
-        String logPath = "\\log\\" + format + ".log";
+        String logPath = "C:\\app\\log\\" + format + ".log";
         File writeFile;
         try {
             writeFile = new File(logPath);
             // 如果文本文件不存在则创建它
             if (!writeFile.exists()) {
-                File path = new File("\\log");
+                File path = writeFile.getParentFile();
                 if (!path.exists()) {
                     if (path.mkdirs()) {
                         System.out.println("The log path does not exist and has been created");
@@ -94,6 +111,11 @@ public class FightService extends HttpUtils {
             LOG_FW = new FileOutputStream(writeFile, true);
             LOG_OUT = new OutputStreamWriter(LOG_FW, StandardCharsets.UTF_8);
 
+            // config
+            String cookie = CONFIG_PROPERTIES.getProperty("cookie", "null");
+            log("Load cookie", cookie);
+            GLOBAL_COOKIE = cookie;
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,10 +127,10 @@ public class FightService extends HttpUtils {
     public static void startUp() {
         // 是否显示日志
 //        SHOW_DETAILS = showDetails;
-        // 解析cookie参数
-        parseCookieParameters();
         // 获取账号资源
         getAccountResources();
+        // 解析cookie参数
+        parseCookieParameters();
         // 武林大会
         martialArtsConference();
         // 斗神塔
@@ -194,13 +216,14 @@ public class FightService extends HttpUtils {
     public static void mainC(String[] args) {
         // 不隐藏详情
         HIDE_DETAILS = false;
-
+        // 获取账号资源
+        getAccountResources();
         // 解析cookie参数
         parseCookieParameters();
-        // 获取好友列表
-//        getFriendsList();
-        // 获取帮友
-//        viewMember();
+
+        // 获取好友列表[1好友;3斗友]
+        getFriendsList(1);
+        getFriendsList(3);
 
 //        getGameInformation();
         // 佣兵
@@ -223,7 +246,7 @@ public class FightService extends HttpUtils {
 
         // 每日任务
 
-//        dailyTask();
+        dailyTask();
 
         //佣兵
 
@@ -239,19 +262,11 @@ public class FightService extends HttpUtils {
         // 镖行天下
 //        cargo();
 
-        // 获取好友列表
-        // 获取帮友
-//        viewMember();
-//        getFriendsList();
-
         // wzRy
 //        iwanKingOfGlory();
 
 //        startUp();
 
-        // 获取好友列表[1好友;3斗友]
-//        getFriendsList(1);
-//        getFriendsList(1);
 //        Set<String> strings = GLOBAL_FRIENDS_NPC.keySet();
 //
 //        for (String string : strings) {
@@ -275,6 +290,19 @@ public class FightService extends HttpUtils {
         // 日志完成
         logClose();
     }
+
+
+    public static void mainF(String[] args) {
+        // 天界十二宫
+        String base_str = "zodiacdungeon&op=%s";
+        // 查询=query
+        ResultMsg result = getPetPkCmdResult(base_str, "query");
+        Scene scene = result.getScene();
+//        scene.
+
+
+    }
+
 
     /**
      * 画卷迷踪
@@ -338,18 +366,56 @@ public class FightService extends HttpUtils {
      * 获取账号资源
      */
     public static void getAccountResources() {
+        boolean flag = false;
+        do {
+            if (flag) {
+                GLOBAL_COOKIE = LoginChrome.loginQQ();
+            }
+            String echo = getPetPkCmd(String.format("visit&puin=%s&kind=1", GLOBAL_QQ), "获取游戏信息");
+            flag = echo.contains("失败");
+
+        } while (flag);
+
         String html = getPhonePk("cmd=index");
         Document doc = Jsoup.parse(html);
         if (doc == null) {
             log("DOC", "IS NULL");
             return;
         }
+
         String info = doc.getElementById("id")
                 .getElementsByTag("p")
                 .get(0).text();
 //        System.out.println(info);
         parsingParameters(info);
     }
+
+    public static void loadInformation() {
+        Map<String, String> result;
+        boolean flag = false;
+        do {
+            if (flag) {
+                GLOBAL_COOKIE = LoginChrome.loginQQ();
+            }
+            String json = getPetPkCmd(String.format("visit&puin=%s&kind=1", GLOBAL_QQ), "获取游戏信息");
+//            @SuppressWarnings("unchecked")
+            result = JSONObject.parseObject(json, Map.class);
+            String msg = result.get("msg");
+            flag = msg.contains("失败");
+        } while (flag);
+
+//    基础信息
+        String base_info = result.get("baseinfo");
+        @SuppressWarnings("unchecked")
+        Map<String, String> info = JSONObject.parseObject(base_info, Map.class);
+        // 徒弟
+        String tuDi = result.get("tudi");
+        GLOBAL_LEVEL = info.get("lilian");
+        GLOBAL_ENERGY = info.get("energy");
+        GLOBAL_PHYSICAL_STRENGTH = Integer.parseInt(info.get("sp"));
+
+    }
+
 
     /**
      * 解析账号信息
@@ -383,7 +449,7 @@ public class FightService extends HttpUtils {
                     GLOBAL_PHYSICAL_STRENGTH = Integer.parseInt(value.split("/")[0]);
                     break;
                 case "活力":
-                    GLOBAL_VIGOR = value.split("/")[0];
+                    GLOBAL_ENERGY = value.split("/")[0];
                     break;
                 case "等级":
                     GLOBAL_LEVEL = value;
@@ -433,23 +499,23 @@ public class FightService extends HttpUtils {
         // 开始押镖[0]
 //        ResultMsg on =
         getPetPkCmdResult(String.format(baseStr, 7));
-        String npcId = "0";//= on.getNpc_id();
+//        String npcId = "0";//= on.getNpc_id();
         for (int i = 0; i < 3; i++) {
-            if (!"0".equals(npcId)) {
-                // 护送镖车
-                ResultMsg start = getPetPkCmdResult(String.format(baseStr, 6));
-                log("镖行天下", start.getMsg());
-                break;
-            }
             // 刷新镖师
             ResultMsg refresh = getPetPkCmdResult(String.format(baseStr, 8));
             String msg = refresh.getMsg();
             if (msg.contains(msgStr)) {
+                return;
+            }
+            String npcId = refresh.getNpc_id();
+            log(String.format("刷新镖师[%s]", npcId), msg);
+            if (!"0".equals(npcId)) {
                 break;
             }
-            npcId = refresh.getNpc_id();
-            log(String.format("刷新镖师[%s]", npcId), msg);
         }
+        // 护送镖车
+        ResultMsg start = getPetPkCmdResult(String.format(baseStr, 6));
+        log("镖行天下", start.getMsg());
 
     }
 
@@ -492,13 +558,24 @@ public class FightService extends HttpUtils {
             String id = task.getId();
             int status = Integer.parseInt(task.getStatus());
             String desc = task.getDesc();
-            Set<String> strings = GLOBAL_FRIENDS_NPC.keySet();
+            Set<String> npcNameS = GLOBAL_FRIENDS_NPC.keySet();
             if (2 == status) {
                 // 读取任务-内容[乐斗任务]
-                for (String string : strings) {
-                    if (desc.contains(string)) {
-                        String npcId = GLOBAL_FRIENDS_NPC.get(string);
-                        happyFriend(npcId, desc);
+
+                //与[俊猴王]乐斗并战胜他！
+                for (String npcName : npcNameS) {
+                    String name;
+                    if (npcName.contains(NPC_SIGN)){
+//                    System.out.println("npcName = " + npcName);
+                     name  = npcName.split(NPC_SIGN)[1];
+                     name = name.replaceAll("乐斗", "");
+                    }else {
+                        name=npcName;
+                    }
+                    if (desc.contains(name)) {
+//                        System.out.println("—————————斗乐—————————");
+                        String npcId = GLOBAL_FRIENDS_NPC.get(npcName);
+                        happyFriend(npcId, npcName);
                         status = 3;
                     }
                 }
@@ -601,6 +678,7 @@ public class FightService extends HttpUtils {
     public static void oneClickAccelerationForMobileQQGames() {
         String url = "https://api.uomg.com/api/qq.game?qq="
                 + GLOBAL_QQ + "&skey=" + GLOBAL_S_KEY + "&pt4_token=" + GLOBAL_PT4_TOKEN;
+        System.out.println("url = " + url);
         getPetPkCmd(url, "手Q游戏一键加速");
 
     }
@@ -690,6 +768,9 @@ public class FightService extends HttpUtils {
      * @return echo [self]qq
      */
     public static String happyFriend(String uin, String name) {
+        if (!StringUtils.hasLength(uin)) {
+            throw new NullPointerException("uin not is null");
+        }
 //        String param;
         StringBuilder param = new StringBuilder("fight&");
 
@@ -700,7 +781,7 @@ public class FightService extends HttpUtils {
         // fight&type=4&puin=1842567252
         if (name == null) {
             param.append("type=4&puin=");
-        } else if (uin.startsWith(NPC_SIGN)) {
+        } else if (name.startsWith(NPC_SIGN)) {
             param.append("puin=");
         } else {
             param.append("uin=");
@@ -763,7 +844,7 @@ public class FightService extends HttpUtils {
         String param = "mappush&type=1&npcid=%d";
         String endStr = "该NPC";
 //        String resStr;
-        int i = Integer.parseInt(GLOBAL_VIGOR) / 10;
+        int i = Integer.parseInt(GLOBAL_ENERGY) / 10;
         do {
             String resStr = getPetPkCmd(String.format(param, start),
                     String.format("历练-获取佣兵[%d]", start));
@@ -834,7 +915,7 @@ public class FightService extends HttpUtils {
     public static void mistyFantasy() {
         String base = "misty&op=%s";
         String timesHaveBeenUsedUp = "次数已用完";
-        String startStr = getPetPkCmd(String.format(base, "start&stage_id=1"), "");//
+        String startStr = getPetPkCmd(String.format(base, "start&stage_id=1"), "");
         if (startStr.contains(timesHaveBeenUsedUp)) {
             return;
         }
@@ -1132,7 +1213,9 @@ public class FightService extends HttpUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        // 保存配置
+        CONFIG_PROPERTIES.setProperty("cookie", GLOBAL_COOKIE);
+        CONFIG_UTILS.store(CONFIG_PROPERTIES);
 
     }
 
